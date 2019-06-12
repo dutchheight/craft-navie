@@ -133,7 +133,7 @@ class Install extends Migration
         $this->addForeignKey(null, ListRecord::tableName(), 'fieldLayoutId', Table::FIELDLAYOUTS, 'id', 'SET NULL', null);
         $this->addForeignKey(null, ListRecord::tableName(), 'structureId', Table::STRUCTURES, 'id', 'CASCADE', null);
 
-        $this->addForeignKey(null, ListItemRecord::tableName(), 'id', Table::ELEMENTS, 'id', 'CASCASE', 'CASCASE');
+        $this->addForeignKey(null, ListItemRecord::tableName(), 'id', Table::ELEMENTS, 'id', 'CASCADE', null);
         $this->addForeignKey(null, ListItemRecord::tableName(), 'siteId', Table::SITES, 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, ListItemRecord::tableName(), 'listId', ListRecord::tableName(), 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, ListItemRecord::tableName(), 'elementId', Table::ELEMENTS, 'id', 'SET NULL', null);
