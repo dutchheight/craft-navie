@@ -1,0 +1,61 @@
+{% requirePermission 'navie:lists' %}
+
+{% extends 'navie/settings/_layout' %}
+
+{% set selectedSubnavItem = 'lists' %}
+
+{% block actionButton %}
+    <a class="btn submit add icon" href="{{ url('navie/settings/lists/new') }}">
+        {{ 'New'|t('app') }}
+    </a>
+{% endblock %}
+
+{% block content %}
+    <p id="nolists" {% if lists|length %}class="hidden"{% endif -%}>
+        {{ "No lists exist yet."|t('navie') }}
+    </p>
+
+    {% if lists|length %}
+        <table id="lists" class="data fullwidth collapsible">
+            <thead>
+                <th scope="col">{{ "Name"|t('app') }}</th>
+                <th scope="col">{{ "Handle"|t('app') }}</th>
+                <th scope="col">{{ "Max Levels"|t('app') }}</th>
+                <td></td>
+                <td class="thin"></td>
+            </thead>
+            <tbody>
+                {% for list in lists %}
+                    <tr data-id="{{ list.id }}" data-name="{{ list.name|t('site') }}">
+                        <th scope="row" data-title="{{ 'Name'|t('app') }}">
+                            <a class="nav-anchor" href="{{ url('navie/settings/lists/' ~ list.id) }}">
+                                {{ list.name|t('app') }}
+                            </a>
+                        </th>
+                        <td scope="row" data-title="{{ 'Handle'|t('app') }}" class="code">
+                            {{ list.handle }}
+                        </td>
+                        <td scope="row" data-title="{{ 'Max Levels'|t('app') }}">
+                            {{ list.maxLevels }}
+                        </td>
+                        <td><a href="{{ url('navie/' ~ list.handle) }}">{{ 'Manage items'|t('navie') }}</a></td>
+                        <td class="thin">
+                            {%- if currentUser.can('navie:lists:delete') %}
+                                <a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a>
+                            {% endif -%}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+{% endblock %}
+
+{% js %}
+    var adminTable = new Craft.AdminTable({
+        tableSelector: '#lists',
+        noItemsSelector: '#nolists',
+        deleteAction: 'navie/lists/delete-list',
+        confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its items?"|t('navie') }}'
+    });
+{% endjs %}

@@ -1,0 +1,86 @@
+{% extends '_layouts/cp' %}
+{% set fullPageForm = true %}
+
+{% import '_includes/forms' as forms %}
+
+{% block content %}
+    <input type="hidden" name="action" value="navie/lists/save-list">
+    {{ redirectInput('navie/settings/lists') }}
+
+    {% if not isBrandNew %}
+        <input type="hidden" name="listId" value="{{- list.id -}}">
+    {% endif %}
+
+    <div id="list-settings">
+      {{ forms.textField({
+            first: true,
+            label: 'Name'|t('app'),
+            instructions: 'What this list will be called in the CP.'|t('navie'),
+            id: 'name',
+            name: 'name',
+            value: list.name,
+            errors: list.getErrors('name'),
+            autofocus: true,
+            required: true,
+        }) }}
+
+        {{ forms.textField({
+            label: 'Handle'|t('app'),
+            instructions: 'How you’ll refer to this list in the templates.'|t('navie'),
+            id: 'handle',
+            name: 'handle',
+            class: 'code',
+            value: list.handle,
+            errors: list.getErrors('handle'),
+            required: true,
+        }) }}
+
+        {% if craft.app.getIsMultiSite() %}
+            {{ forms.checkboxField({
+                label: 'Propagate list items across all enabled sites?'|t('navie'),
+                instructions: 'Whether list items should be propagated across all the sites the list is enabled in. If this is disabled, each list item will only belong to the site it was created in.'|t('navie'),
+                id: 'propagate',
+                name: 'propagate',
+                checked: list.propagate,
+                warning: list.id and list.propagate ? 'Changing this may result in data loss.'|t('navie')
+            }) }}
+        {% endif %}
+
+        {{ forms.textField({
+            label: 'Max Levels'|t('app'),
+            instructions: 'The maximum number of levels this list can have. Leave blank if you don’t care.'|t('navie'),
+            id: 'maxLevels',
+            name: 'maxLevels',
+            size: 5,
+            value: list.maxLevels,
+            errors: list.getErrors('maxLevels'),
+        }) }}
+    </div>
+
+    <div id="list-fieldlayout" class="hidden">
+        {% include "_includes/fieldlayoutdesigner" with {
+            fieldLayout: fieldLayout
+        } only %}
+    </div>
+{% endblock %}
+
+{% block details %}
+    <div id="settings" class="meta {% if not isBrandNew %}read-only{% endif %}">
+        {% if not isBrandNew %}
+            <div class="data">
+                <h5 class="heading">{{ 'Date Created'|t('navie') }}</h5>
+                <div class="value">{{ list.dateCreated|datetime('short') }}</div>
+            </div>
+            <div class="data">
+                <h5 class="heading">{{ 'Date Updated'|t('navie') }}</h5>
+                <div class="value">{{ list.dateUpdated|datetime('short') }}</div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% if not list.handle %}
+    {% js %}
+        new Craft.HandleGenerator('#name', '#handle');
+    {% endjs %}
+{% endif %}

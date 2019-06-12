@@ -1,0 +1,13 @@
+{% extends '_layouts/cp' %}
+
+{% set title = craft.navie.getPluginName() ~ ' Settings'|t('app') %}
+{% set navItems = {
+    'general': currentUser.can('navie:settings') ? { label: 'General'|t('navie'), url: url('navie/settings') },
+    'lists': currentUser.can('navie:lists') ? { label: 'Lists'|t('navie'), url: url('navie/settings/lists') }
+}|filter %}
+
+{% block sidebar %}
+    <nav>
+        {% include '_includes/nav' with { items: navItems, selectedItem: selectedNavItem } only %}
+    </nav>
+{% endblock %}

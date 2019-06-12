@@ -1,0 +1,10 @@
+{% extends "_layouts/elementindex" %}
+
+{% set title = "List Items"|t('navie') %}
+{% set elementType = 'dutchheight\\navie\\elements\\ListItem' %}
+
+{% if listHandle is defined %}
+    {% js 'window.defaultListHandle = "' ~ listHandle ~ '";' %}
+{% endif %}
+
+{% do view.registerAssetBundle('dutchheight\\navie\\assets\\cp\\Bundle') %}

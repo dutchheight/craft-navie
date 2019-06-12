@@ -1,0 +1,36 @@
+{% import "_includes/forms" as forms %}
+
+<div id="link-types">
+    {{ forms.selectField({
+        label: 'Target'|t('app'),
+        id: 'target',
+        name: 'target',
+        value: listItem.target,
+        options: {
+            '_self': 'Load in the same frame as it was clicked'|t('navie'),
+            '_blank': 'Load in a new window'|t('navie'),
+        },
+        required: false
+    }) }}
+
+    {% if linkType.type is same as('Url') %}
+        {{ forms.autosuggestField({
+            label: linkType.label,
+            id: 'url',
+            name: 'url',
+            value: listItem.url,
+            errors: listItem.getErrors('url'),
+        }) }}
+    {% else %}
+        {{ forms.elementSelectField({
+            label: linkType.label,
+            selectionLabel: linkType.button,
+            instructions: linkType.instructions,
+            id: 'elementId',
+            name: 'elementId',
+            elementType: linkType.type,
+            elements: [listItem.getElement()],
+            limit: 1
+        }) }}
+    {% endif %}
+</div>

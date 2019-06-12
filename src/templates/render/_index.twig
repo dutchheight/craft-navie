@@ -1,0 +1,33 @@
+{% spaceless %}
+
+{% set ulClass = options.ulClass ?? '' %}
+{% set ulAttributes = options.ulAttributes ?? [] %}
+
+{% set ulChildClass = options.ulChildClass ?? '' %}
+{% set ulChildAttributes = options.ulChildAttributes ?? [] %}
+
+{% set listClass = options.listClass ?? '' %}
+{% set listAttributes = options.listAttributes ?? [] %}
+
+{% set linkClass = options.linkClass ?? '' %}
+{% set linkAttributes = options.linkAttributes ?? [] %}
+{% set linkActiveClass = options.linkActiveClass ?? 'active' %}
+
+<ul {% if ulClass|length %}class="{{ ulClass }}"{% endif %} {% for key, value in ulAttributes %}{{ key }}="{{ value }}"{% endfor %}>
+    {% nav item in items %}
+        <li {% if listClass|length %}class="{{ listClass }}"{% endif %} {% for key, value in listAttributes %}{{ key }}="{{ value }}"{% endfor %}>
+            <a href="{{ item.getUrl() }}" class="{{ linkClass }} {% if item.active %}{{ linkActiveClass -}}{% endif %}" target="{{ item.target }}" {% for key, value in linkAttributes %}{{ key }}="{{ value }}"{% endfor %}>
+                {{- item.title -}}
+                <p>{{ item.summary }}</p>
+            </a>
+
+            {%- ifchildren -%}
+                <ul {% if ulChildClass|length %}class="{{ ulChildClass }}"{% endif %} {% for key, value in ulChildAttributes %}{{ key }}="{{ value }}"{% endfor %}>
+                    {% children %}
+                </ul>
+            {%- endifchildren -%}
+        </li>
+    {% endnav %}
+</ul>
+
+{% endspaceless %}

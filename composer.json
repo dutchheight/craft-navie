@@ -1,0 +1,38 @@
+{
+    "name": "dutchheight/craft-navie",
+    "description": "Simple navigation plugin for Craft CMS 3",
+    "type": "craft-plugin",
+    "version": "1.0.1",
+    "keywords": [
+        "craft",
+        "cms",
+        "craftcms",
+        "craft-plugin",
+        "navie"
+    ],
+    "support": {
+        "docs": "https://github.com/dutchheight/craft-navie/blob/master/README.md",
+        "issues": "https://github.com/dutchheight/craft-navie/issues"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Dutch Height",
+            "homepage": "https://www.dutchheight.com"
+        }
+    ],
+    "require": {
+        "craftcms/cms": "^3.0.0"
+    },
+    "autoload": {
+        "psr-4": {
+          "dutchheight\\navie\\": "src/"
+        }
+    },
+    "extra": {
+        "name": "Navie",
+        "handle": "navie",
+        "changelogUrl": "https://raw.githubusercontent.com/dutchheight/navie/master/CHANGELOG.md",
+        "class": "dutchheight\\navie\\Navie"
+    }
+}
