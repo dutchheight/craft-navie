@@ -1,6 +1,6 @@
 {
     "name": "dutchheight/craft-navie",
-    "description": "Simple navigation plugin for Craft CMS 3",
+    "description": "Navigation plugin for Craft CMS 3",
     "type": "craft-plugin",
     "version": "1.0.1",
     "keywords": [
