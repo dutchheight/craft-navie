@@ -18,7 +18,6 @@
         <li {% if listClass|length %}class="{{ listClass }}"{% endif %} {% for key, value in listAttributes %}{{ key }}="{{ value }}"{% endfor %}>
             <a href="{{ item.getUrl() }}" class="{{ linkClass }} {% if item.active %}{{ linkActiveClass -}}{% endif %}" target="{{ item.target }}" {% for key, value in linkAttributes %}{{ key }}="{{ value }}"{% endfor %}>
                 {{- item.title -}}
-                <p>{{ item.summary }}</p>
             </a>
 
             {%- ifchildren -%}
