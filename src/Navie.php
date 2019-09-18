@@ -11,23 +11,23 @@
 namespace dutchheight\navie;
 
 use dutchheight\navie\base\PluginTrait;
-use dutchheight\navie\services\ListService;
 use dutchheight\navie\variables\NavieVariable;
 use dutchheight\navie\models\Settings;
+use dutchheight\navie\graphql\queries\ListItem as ListItemQuery;
+use dutchheight\navie\graphql\interfaces\ListItem as ListItemInterface;
 
 use Craft;
 use craft\base\Plugin;
 use craft\helpers\UrlHelper;
-use craft\services\Plugins;
 use craft\services\UserPermissions;
-use craft\events\PluginEvent;
+use craft\services\Gql;
 use craft\web\UrlManager;
 use craft\web\twig\variables\CraftVariable;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
-
+use craft\events\RegisterGqlQueriesEvent;
+use craft\events\RegisterGqlTypesEvent;
 use yii\base\Event;
-use yii\log\Logger;
 
 /**
  * Class Navie
@@ -184,6 +184,10 @@ class Navie extends Plugin
         // Install event listeners that are needed every request
         $this->registerGlobalEventListeners();
 
+        if (version_compare(Craft::$app->getVersion(), '3.3', '>=')) {
+            $this->registerGraphql();
+        }
+
         // Install only for non-console Control Panel requests
         if ($request->getIsCpRequest() && !$request->getIsConsoleRequest()) {
             $this->registerCpEventListeners();
@@ -204,6 +208,25 @@ class Navie extends Plugin
         );
     }
 
+    protected function registerGraphql()
+    {
+        Event::on(
+            Gql::class,
+            Gql::EVENT_REGISTER_GQL_TYPES, 
+            function(RegisterGqlTypesEvent $event) {
+                $event->types[] = ListItemInterface::class;
+            }
+        );
+
+        Event::on(
+            Gql::class,
+            Gql::EVENT_REGISTER_GQL_QUERIES,
+            function(RegisterGqlQueriesEvent $event) {
+                $event->queries = array_merge($event->queries, ListItemQuery::getQueries());
+             }
+        );
+    }
+    
     protected function registerCpEventListeners()
     {
         // Handler: UrlManager::EVENT_REGISTER_CP_URL_RULES

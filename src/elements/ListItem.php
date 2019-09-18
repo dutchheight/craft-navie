@@ -160,6 +160,12 @@ class ListItem extends Element
         return $this->url;
     }
 
+    public static function gqlTypeNameByContext($context): string
+    {
+        /** @var ListModel $context */
+        return $context->handle . '_List';
+    }
+
     // Protected Methods
     // =========================================================================
 
@@ -212,7 +218,7 @@ class ListItem extends Element
 
         // Get the group we need to check permissions on
         if (preg_match('/^list:(\d+)$/', $source, $matches)) {
-            $list = Navie::$plugin->getLists()->getListById($matches[1]);
+            $list = Navie::$plugin->getLists()->getListById((int)$matches[1]);
         } else if (preg_match('/^list:(.+)$/', $source, $matches)) {
             $list = Navie::$plugin->getLists()->getListByUid($matches[1]);
         }
@@ -383,13 +389,14 @@ class ListItem extends Element
     {
         $list = $this->getList();
 
-        $url = UrlHelper::cpUrl('navie/' . $list->handle . '/' . $this->id);
+        $path = 'navie/' . $list->handle . '/' . $this->id;
 
+        $params = [];
         if (Craft::$app->getIsMultiSite()) {
-            $url .= '/' . $this->getSite()->handle;
+            $params['site'] = $this->getSite()->handle;
         }
 
-        return $url;
+        return UrlHelper::cpUrl($path, $params);
     }
 
      /**
@@ -443,6 +450,14 @@ class ListItem extends Element
         return $html;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function getGqlTypeName(): string
+    {
+        return self::gqlTypeNameByContext($this->getList());
+    }
+
     // Events
     // -------------------------------------------------------------------------
 
@@ -487,7 +502,6 @@ class ListItem extends Element
         }
 
         $record->listId = $this->listId;
-        $record->siteId = $this->siteId;
         $record->elementId = null;
         $record->url = $this->url;
         $record->type = $this->type;
