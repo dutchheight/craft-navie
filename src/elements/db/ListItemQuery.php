@@ -10,9 +10,12 @@
 
 namespace dutchheight\navie\elements\db;
 
+use dutchheight\navie\records\ListRecord;
 use dutchheight\navie\records\ListItemRecord;
+use dutchheight\navie\models\ListModel;
 
 use Craft;
+use craft\db\Query;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 
@@ -25,11 +28,6 @@ class ListItemQuery extends ElementQuery
      * @var int|null ID
      */
     public $id;
-
-    /**
-     * @var int|null Site ID
-     */
-    public $siteId;
 
     /**
      * @var int|null List ID
@@ -80,6 +78,42 @@ class ListItemQuery extends ElementQuery
         parent::init();
     }
 
+
+    /**
+     * Narrows the query results based on the lists the listitem belong to.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `'foo'` | in a list with a handle of `foo`.
+     * | `'not foo'` | not in a list with a handle of `foo`.
+     * | `['foo', 'bar']` | in a list with a handle of `foo` or `bar`.
+     * | `['not', 'foo', 'bar']` | not in a list with a handle of `foo` or `bar`.
+     * | a [[ListModel|ListModel]] object | in a list represented by the object.
+     *
+     * @param string|string[]|ListModel|null $value The property value
+     * @return static self reference
+     * @uses $listId
+     */
+    public function list($value)
+    {
+        if ($value instanceof ListModel) {
+            $this->structureId = ($value->structureId ?: false);
+            $this->listId = $value->id;
+        } else if ($value !== null) {
+            $this->listId = (new Query())
+                ->select(['id'])
+                ->from(ListRecord::tableName())
+                ->where(Db::parseParam('handle', $value))
+                ->column();
+        } else {
+            $this->listId = null;
+        }
+
+        return $this;
+    }
+
     /**
      * Sets the list id property
      *
@@ -118,7 +152,6 @@ class ListItemQuery extends ElementQuery
         $this->query->select([
             $table . '.id',
             $table . '.listId',
-            $table . '.siteId',
             $table . '.elementId',
             $table . '.type',
             $table . '.url',

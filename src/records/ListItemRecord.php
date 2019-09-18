@@ -19,7 +19,6 @@ use yii\db\ActiveQueryInterface;
 
 /**
  * @property int $id Record ID
- * @property int $siteId Site ID
  * @property int $listId List ID
  * @property string $type Type
  * @property string $url Url

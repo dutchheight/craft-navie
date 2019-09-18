@@ -96,7 +96,6 @@ class Install extends Migration
 
             $this->createTable(ListItemRecord::tableName(), [
                     'id' => $this->primaryKey(),
-                    'siteId' => $this->integer()->notNull(),
                     'listId' => $this->integer()->notNull(),
                     'elementId'=> $this->integer()->null(),
                     'type' => $this->string()->null(),
@@ -121,7 +120,7 @@ class Install extends Migration
         $this->createIndex(null, ListRecord::tableName(), 'handle', true);
         $this->createIndex(null, ListRecord::tableName(), ['structureId', 'fieldLayoutId'], false);
 
-        $this->createIndex(null, ListItemRecord::tableName(), ['siteId', 'listId'], false);
+        $this->createIndex(null, ListItemRecord::tableName(), 'listId', false);
         $this->createIndex(null, ListItemRecord::tableName(), 'elementId', false);
     }
 
@@ -134,7 +133,6 @@ class Install extends Migration
         $this->addForeignKey(null, ListRecord::tableName(), 'structureId', Table::STRUCTURES, 'id', 'CASCADE', null);
 
         $this->addForeignKey(null, ListItemRecord::tableName(), 'id', Table::ELEMENTS, 'id', 'CASCADE', null);
-        $this->addForeignKey(null, ListItemRecord::tableName(), 'siteId', Table::SITES, 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, ListItemRecord::tableName(), 'listId', ListRecord::tableName(), 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, ListItemRecord::tableName(), 'elementId', Table::ELEMENTS, 'id', 'SET NULL', null);
     }
@@ -146,30 +144,5 @@ class Install extends Migration
     {
         $this->dropTableIfExists(ListItemRecord::tableName());
         $this->dropTableIfExists(ListRecord::tableName());
-    }
-
-    /**
-     * @return void
-     */
-    protected function removeDefaultData()
-    {
-        $entryField = Craft::$app->getFields()->getFieldByHandle(Navie::FIELD_ENTRY_HANDLE);
-        if (!is_null($entryField)) {
-            Craft::$app->getFields()->deleteFieldById($entryField->id);
-        }
-
-        $urlHandle = Craft::$app->getFields()->getFieldByHandle(Navie::FIELD_URL_HANDLE);
-        if (!is_null($urlHandle)) {
-            Craft::$app->getFields()->deleteFieldById($urlHandle->id);
-        }
-
-        /** @var FieldGroup[] $groups */
-        $groups = Craft::$app->getFields()->getAllGroups();
-        foreach ($groups as $group) {
-            $fields = Craft::$app->getFields()->getFieldsByGroupId($group->id);
-            if (count($fields) === 0 && $group->name === Navie::FIELD_GROUP_NAME) {
-                Craft::$app->getFields()->deleteGroupById($group->id);
-            }
-        }
     }
 }

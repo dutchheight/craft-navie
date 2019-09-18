@@ -17,6 +17,7 @@
     {% if craft.app.getIsMultiSite() %}
         {% set parentIdParam = craft.app.request.getParam('parentId.0') ?: craft.app.request.getParam('parentId') %}
         {% set urlFormat = url("navie/#{listHandle}/#{craft.app.request.getSegment(3)}/{handle}", (parentIdParam ? { parentId: parentIdParam })) %}
+
         {% include "_elements/sitemenu" with {
             siteIds: siteIds,
             selectedSiteId: listItem.siteId,
