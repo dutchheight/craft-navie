@@ -337,7 +337,7 @@ class ListsController extends BaseListItemsController
             $listItem->setScenario(Element::SCENARIO_LIVE);
         }
 
-        if (!Craft::$app->getElements()->saveElement($listItem)) {
+        if (!Craft::$app->getElements()->saveElement($listItem, true, false)) {
             if ($request->getAcceptsJson()) {
                 return $this->asJson([
                     'success' => false,
