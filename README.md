@@ -40,8 +40,27 @@ To install the plugin, follow these instructions.
 |handle|string|true|handle specified in the settings|
 |options|object|false|For more info see 'Options'|
 
-#### Options
+#### Available Options
 ```
+{
+	ulClass: 'class',
+	ulAttributes: {
+		'style': 'margin-top: 10;'
+	},
+	ulChildClass: 'class',
+	ulChildAttributes: {
+		'style': 'margin-top: 10;'
+	},
+	listClass: 'class',
+	listAttributes: {
+		'style': 'margin-top: 10;'
+	},
+	linkClass: 'class',
+	linkAttributes: {
+		'style': 'margin-top: 10;'
+	},
+	linkActiveClass: 'active'
+}
 
 ```
 
