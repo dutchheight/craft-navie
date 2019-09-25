@@ -32,7 +32,30 @@ To install the plugin, follow these instructions.
 
 ## Using Navie
 
--Insert text here-
+### Display a navie list
+`craft.navie.render(handle, options)` is used to display a list. You can provide styling options.
+
+| Attribute | Type | Required | Description |
+|:----------|:-----|:---------|:------------|
+|handle|string|true|handle specified in the settings|
+|options|object|false|For more info see 'Options'|
+
+#### Options
+```
+
+```
+
+#### Examples
+Render a navie list:
+```
+{{ craft.navie.render('main', {
+	ulChildAttributes: {
+		'style': 'margin-top: 0.25rem;',
+		'data-option': 'test',
+	}
+}) }}
+```
+---
 
 ## Navie Roadmap
 
