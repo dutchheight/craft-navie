@@ -102,22 +102,21 @@ Render a navie list:
 
 | Attribute | Type | Required | Description |
 |:----------|:-----|:---------|:------------|
-|criteria|string|true|handle specified in the settings|
+|criteria|array|false|Craft entry criteria|
 
 
 #### Examples
 All items
 ```
-craft.navie.items().list('main').all() %}
+craft.navie.items().list('main').all()
 ```
 
 Limit by level
-```
-{{ 
-	craft.navie.items()
-	.list('main')
-	.level(1) %}
-}}
+``` 
+craft.navie.items()
+.list('main')
+.level(1) %}
+
 ```
 ---
 
