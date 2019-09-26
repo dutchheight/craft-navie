@@ -1,7 +1,7 @@
 # Navie plugin for Craft CMS 3.x
 
-Navigation plugin for Craft CMS 3 with GraphQL support.
-Navie allow's you to create item types with custom properties.
+Navigation plugin for Craft CMS 3 with GraphQL and custom field support.
+Navie allow's you to add custom fields to your navigation items.
 
 ![Screenshot](resources/img/plugin-logo.png)
 
