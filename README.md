@@ -1,12 +1,13 @@
 # Navie plugin for Craft CMS 3.x
 
-Simple navigation plugin for Craft CMS 3
+Simple navigation plugin for Craft CMS 3 with GraphQL support.
+Navie allow's you to create item types with properties.
 
 ![Screenshot](resources/img/plugin-logo.png)
 
 ## Requirements
 
-This plugin requires Craft CMS 3.0.0-beta.23 or later.
+This plugin requires Craft CMS 3.0.0 or later.
 
 ## Installation
 
@@ -22,17 +23,105 @@ To install the plugin, follow these instructions.
 
 3. In the Control Panel, go to Settings → Plugins and click the “Install” button for Navie.
 
-## Navie Overview
+4. Create a list
 
--Insert text here-
+5. Render in template. See [Display a navie list](#display-a-navie-list)
 
-## Configuring Navie
+## Navie Features
+- Multiple menus/lists
+- Multisite support
+- GraphQL support
+- Default linktypes (Enrty, Url, Categorie)
+- Add custom linktypes per menu by adding fields
+- Rich API
+- Editable plugin name
+- Permissions
 
--Insert text here-
+## Using Navie with Twig
 
-## Using Navie
+### Display a navie list
+`craft.navie.render(handle, options)` is used to display a list. You can provide styling options.
 
--Insert text here-
+| Attribute | Type | Required | Description |
+|:----------|:-----|:---------|:------------|
+|handle|string|true|handle specified in the settings|
+|options|object|false|For more info see [Available Options](#available-options)|
+
+#### Available Options
+```
+{
+	ulClass: 'class',
+	ulAttributes: {
+		'style': 'margin-top: 10;'
+	},
+	ulChildClass: 'class',
+	ulChildAttributes: {
+		'style': 'margin-top: 10;'
+	},
+	listClass: 'class',
+	listAttributes: {
+		'style': 'margin-top: 10;'
+	},
+	linkClass: 'class',
+	linkAttributes: {
+		'style': 'margin-top: 10;'
+	},
+	linkActiveClass: 'active'
+}
+
+```
+
+#### Examples
+Render a navie list:
+```
+{{ craft.navie.render('main', {
+	ulChildAttributes: {
+		'style': 'margin-top: 0.25rem;',
+		'data-option': 'test',
+	}
+}) }}
+```
+---
+
+### Raw navie list
+`craft.navie.raw(handle, siteId)` is used to display a list. You can provide styling options.
+
+| Attribute | Type | Required | Description |
+|:----------|:-----|:---------|:------------|
+|handle|string|true|handle specified in the settings|
+|siteId|number|false|specify the site id|
+
+
+#### Examples
+Render a navie list:
+```
+{{ craft.navie.raw('main') }}
+```
+---
+
+## Using Navie with GraphQL
+
+#### Examples
+```
+{
+  listItems(list: "main", level: 1) {
+    id,
+    title,
+    url,
+    target,
+    children {
+      id,
+      url,
+      title,
+      target,
+      ... on main_List { // Get custom fields
+        classes
+      }
+    }
+  }
+}
+```
+---
 
 ## Navie Roadmap
 
