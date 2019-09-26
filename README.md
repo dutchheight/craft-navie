@@ -44,12 +44,13 @@ To install the plugin, follow these instructions.
 - Multiple menus/lists
 - Multisite support
 - GraphQL support
-- Default linktypes (Enrty, Url, Categorie)
+- Default linktypes (Entry, Url, Category, Asset)
 - Add custom linktypes per menu by adding fields
 - Rich API
 - Editable plugin name
 - Permissions (manage lists and edit settings)
 - Permissions for each list (show, create, edit and delete)
+- Eager loading (Entry, Category, Asset)
 
 ## Using Navie with Twig
 
@@ -97,8 +98,8 @@ Render a navie list:
 ```
 ---
 
-### Raw navie list
-`craft.navie.items(criteria)` is used to get a list. [Check Craft Element queries for more info](https://docs.craftcms.com/v3/dev/element-queries/)
+### Get navie list items raw
+`craft.navie.items(criteria)` is used to get a list items. This allows you  [Check Craft Element queries for more info](https://docs.craftcms.com/v3/dev/element-queries/). Each item 
 
 | Attribute | Type | Required | Description |
 |:----------|:-----|:---------|:------------|
@@ -106,18 +107,29 @@ Render a navie list:
 
 
 #### Examples
-All items
+Get all items
 ```
-craft.navie.items().list('main').all()
+{% set items = craft.navie.items().list('main').all() %}
 ```
 
-Limit by level
+Get items limited by level
 ``` 
-craft.navie.items()
+{% set items = craft.navie.items()
 .list('main')
 .level(1) %}
 
 ```
+
+Get all items Eager loaded
+``` 
+{% set items = craft.navie.items()
+.list('main')
+.with(['entry', 'category', 'asset'])
+.all() %}
+```
+
+Now you are able to use `items.getElement().title` without extra queries. This is also posible without eager loading but at a peformance cost.
+
 ---
 
 ## Using Navie with GraphQL
