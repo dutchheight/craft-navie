@@ -1,9 +1,22 @@
 # Navie plugin for Craft CMS 3.x
 
-Simple navigation plugin for Craft CMS 3 with GraphQL support.
-Navie allow's you to create item types with properties.
+Navigation plugin for Craft CMS 3 with GraphQL support.
+Navie allow's you to create item types with custom properties.
 
 ![Screenshot](resources/img/plugin-logo.png)
+
+![Add custom fields](resources/img/add-custom-fields.png)
+
+Add custom fields
+
+
+![Add link](resources/img/create-new-list-item.png)
+
+Add link to list
+
+![Use custom fields](resources/img/create-a-new-list-tem-custom-field.png)
+
+Use custom fields
 
 ## Requirements
 
@@ -35,7 +48,8 @@ To install the plugin, follow these instructions.
 - Add custom linktypes per menu by adding fields
 - Rich API
 - Editable plugin name
-- Permissions
+- Permissions (manage lists and edit settings)
+- Permissions for each list (show, create, edit and delete)
 
 ## Using Navie with Twig
 
@@ -84,18 +98,26 @@ Render a navie list:
 ---
 
 ### Raw navie list
-`craft.navie.raw(handle, siteId)` is used to display a list. You can provide styling options.
+`craft.navie.items(criteria)` is used to get a list. [Check Craft Element queries for more info](https://docs.craftcms.com/v3/dev/element-queries/)
 
 | Attribute | Type | Required | Description |
 |:----------|:-----|:---------|:------------|
-|handle|string|true|handle specified in the settings|
-|siteId|number|false|specify the site id|
+|criteria|string|true|handle specified in the settings|
 
 
 #### Examples
-Render a navie list:
+All items
 ```
-{{ craft.navie.raw('main') }}
+craft.navie.items().list('main').all() %}
+```
+
+Limit by level
+```
+{{ 
+	craft.navie.items()
+	.list('main')
+	.level(1) %}
+}}
 ```
 ---
 
@@ -114,7 +136,7 @@ Render a navie list:
       url,
       title,
       target,
-      ... on main_List { // Get custom fields
+      ... on main { // Main is listhandle/ Get custom fields
         classes
       }
     }
