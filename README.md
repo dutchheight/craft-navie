@@ -39,5 +39,8 @@ To install the plugin, follow these instructions.
 Some things to do, and ideas for potential features:
 
 * Release it
+* Settings for available link types
+* Support Project.yaml
+* Custom link type registration
 
 Brought to you by [Dutch Height](https://www.dutchheight.com)

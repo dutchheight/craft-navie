@@ -13,6 +13,7 @@ namespace dutchheight\navie;
 use dutchheight\navie\base\PluginTrait;
 use dutchheight\navie\variables\NavieVariable;
 use dutchheight\navie\models\Settings;
+use dutchheight\navie\elements\ListItem as ListItemElement;
 use dutchheight\navie\graphql\queries\ListItem as ListItemQuery;
 use dutchheight\navie\graphql\interfaces\ListItem as ListItemInterface;
 
@@ -27,6 +28,9 @@ use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlTypesEvent;
+use craft\events\SiteEvent;
+use craft\queue\jobs\ResaveElements;
+use craft\services\Sites;
 use yii\base\Event;
 
 /**
@@ -55,9 +59,6 @@ class Navie extends Plugin
     const FIELD_ENTRY_HANDLE = 'navieEntry';
     const FIELD_CATEGORY_HANDLE = 'navieCategory';
     const FIELD_URL_HANDLE = 'navieCustomUrl';
-
-    const LIST_CACHE_KEY = 'navie-list';
-    const LIST_CACHE_DURATION = 60;
 
     // Public Properties
     // =========================================================================
@@ -97,8 +98,8 @@ class Navie extends Plugin
 
         $this->name = self::$settings->pluginName;
 
-        $this->registerComponents();
-        $this->registerEventListeners();
+        $this->_registerComponents();
+        $this->_registerEventListeners();
     }
 
     /**
@@ -107,53 +108,6 @@ class Navie extends Plugin
     public function getSettingsResponse()
     {
         return Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('navie/settings'));
-    }
-
-        /**
-     * @inheritdoc
-     */
-    public function getCpNavItem()
-    {
-        $subNavs = [];
-        $lists = self::$plugin->getLists()->getEditableLists();
-        $navItem = parent::getCpNavItem();
-
-        $currentUser = Craft::$app->getUser()->getIdentity();
-
-        if (!$currentUser) return;
-
-        $editableSettings = true;
-        $general = Craft::$app->getConfig()->getGeneral();
-
-        if (self::$craft31 && !$general->allowAdminChanges) {
-            $editableSettings = false;
-        }
-
-        $editable = $currentUser->can('navie:settings') && $editableSettings;
-
-        if ((count($lists) < 0 && !$currentUser->admin) || (!$editable && !$currentUser->can('navie:lists'))) {
-            $navItem = [];
-        }
-
-        if ($currentUser->admin) {
-            $subNavs['lists'] = [
-                'label' => Craft::t('navie', 'Lists'),
-                'url' => 'navie/settings/lists',
-            ];
-        }
-
-        if ($editable) {
-            $subNavs['general'] = [
-                'label' => Craft::t('app', 'Settings'),
-                'url' => 'navie/settings',
-            ];
-        }
-
-        $navItem = array_merge($navItem, [
-            'subnav' => $subNavs,
-        ]);;
-
-        return count($navItem) > 1 ? $navItem : null;
     }
 
     // Protected Methods
@@ -177,24 +131,24 @@ class Navie extends Plugin
         ]);
     }
 
-    protected function registerEventListeners()
+    private function _registerEventListeners()
     {
         $request = Craft::$app->getRequest();
 
         // Install event listeners that are needed every request
-        $this->registerGlobalEventListeners();
+        $this->_registerGlobalEventListeners();
 
         if (version_compare(Craft::$app->getVersion(), '3.3', '>=')) {
-            $this->registerGraphql();
+            $this->_registerGraphql();
         }
 
         // Install only for non-console Control Panel requests
         if ($request->getIsCpRequest() && !$request->getIsConsoleRequest()) {
-            $this->registerCpEventListeners();
+            $this->_registerCpEventListeners();
         }
     }
 
-    protected function registerGlobalEventListeners()
+    private function _registerGlobalEventListeners()
     {
         // Handler: CraftVariable::EVENT_INIT
         Event::on(
@@ -208,11 +162,11 @@ class Navie extends Plugin
         );
     }
 
-    protected function registerGraphql()
+    private function _registerGraphql()
     {
         Event::on(
             Gql::class,
-            Gql::EVENT_REGISTER_GQL_TYPES, 
+            Gql::EVENT_REGISTER_GQL_TYPES,
             function(RegisterGqlTypesEvent $event) {
                 $event->types[] = ListItemInterface::class;
             }
@@ -226,8 +180,8 @@ class Navie extends Plugin
              }
         );
     }
-    
-    protected function registerCpEventListeners()
+
+    private function _registerCpEventListeners()
     {
         // Handler: UrlManager::EVENT_REGISTER_CP_URL_RULES
         Event::on(
@@ -236,7 +190,7 @@ class Navie extends Plugin
             function (RegisterUrlRulesEvent $event) {
                 $event->rules = array_merge(
                     $event->rules,
-                    $this->registerCpRoutes()
+                    $this->_registerCpRoutes()
                 );
             }
         );
@@ -246,9 +200,34 @@ class Navie extends Plugin
             UserPermissions::EVENT_REGISTER_PERMISSIONS,
             function (RegisterUserPermissionsEvent $event) {
                 // Register our custom permissions
-                $event->permissions[Craft::t('navie', 'Navie')] = $this->registerCpPermissions();
+                $event->permissions[Craft::t('navie', 'Navie')] = $this->_registerCpPermissions();
             }
         );
+
+        // Resave all lists if the list has progagate enabled
+        Event::on(Sites::class, Sites::EVENT_AFTER_SAVE_SITE, function (SiteEvent $event) {
+            if (!$event->isValid) return;
+
+            $ids = [];
+
+            foreach ($this->getLists()->getAllLists() as $list) {
+                if ($list->propagate) {
+                    foreach ($this->getLists()->getListItemsByListHandle($list->handle) as $listItem) {
+                        $ids[] = $listItem->id;
+                    }
+                }
+            }
+
+            if (count($ids)) {
+                Craft::$app->getQueue()->push(new ResaveElements([
+                    'elementType' => ListItemElement::class,
+                    'criteria' => [
+                        'id' => $ids,
+                        'siteId' => $event->oldPrimarySiteId
+                    ]
+                ]));
+            }
+        });
     }
 
     /**
@@ -256,7 +235,7 @@ class Navie extends Plugin
      *
      * @return array
      */
-    protected function registerCpPermissions()
+    private function _registerCpPermissions()
     {
         $lists = Navie::$plugin->getLists()->getAllLists();
         $permissions = [];
@@ -295,7 +274,7 @@ class Navie extends Plugin
      *
      * @return array
      */
-    protected function registerCpRoutes() : array
+    private function _registerCpRoutes() : array
     {
         return [
             'navie' => 'navie/lists/list-item-index',

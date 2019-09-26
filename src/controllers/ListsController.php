@@ -97,7 +97,7 @@ class ListsController extends BaseListItemsController
 
         $variables['listId'] = $listId;
         $variables['list'] = $list;
-        $variables['fieldLayout'] = $list->getFieldLayout();;
+        $variables['fieldLayout'] = $list->getFieldLayout();
 
         return $this->renderTemplate('navie/settings/lists/_edit', $variables);
     }
@@ -162,6 +162,7 @@ class ListsController extends BaseListItemsController
         $variables = [];
         $variables['listId'] = $listItem->listId;
         $variables['listItem'] = $listItem;
+        $variables['listItemChanged'] = true;
 
         $this->prepEditListItemVariables($variables);
 
@@ -306,7 +307,7 @@ class ListsController extends BaseListItemsController
         // Set the base CP edit URL
         $variables['baseCpEditUrl'] = "navie/{$variables['listHandle']}/{id}";
         // Set the "Continue Editing" URL
-        $siteSegment = Craft::$app->getIsMultiSite() && Craft::$app->getSites()->getCurrentSite()->id != $site->id ? "/{$site->handle}" : '';
+        $siteSegment = Craft::$app->getIsMultiSite() ? "/{$site->handle}" : '';
         $variables['continueEditingUrl'] = $variables['baseCpEditUrl'] . $siteSegment;
         // Set the "Save and add another" URL
         $variables['nextCategoryUrl'] = "navie/{$variables['listHandle']}/new{$siteSegment}";
@@ -391,7 +392,7 @@ class ListsController extends BaseListItemsController
         $this->requirePermission('navie:lists:delete:' . $listItem->getList()->uid);
 
         // Delete it
-        if (!Craft::$app->getElements()->deleteElement($listItem)) {
+        if (!Craft::$app->getElements()->deleteElement($listItem, true)) {
             if (Craft::$app->getRequest()->getAcceptsJson()) {
                 return $this->asJson(['success' => false]);
             }
@@ -601,15 +602,18 @@ class ListsController extends BaseListItemsController
         $variables['tabs'] = [];
         $variables['tabs'][] = [
             'label' => Craft::t('navie', 'Common'),
-            'url' => '#tab-common'
+            'url' => '#tab-navie-common',
+            'htmlId' => 'tab-navie-common',
         ];
 
         foreach ($variables['list']->getFieldLayout()->getTabs() as $index => $tab) {
             // Do any of the fields on this tab have errors?
             $hasErrors = false;
+            $fields = $tab->getFields();
+            $htmlId = $tab->getHtmlId();
 
             if ($variables['listItem']->hasErrors()) {
-                foreach ($tab->getFields() as $field) {
+                foreach ($fields as $field) {
                     /** @var Field $field */
                     if ($hasErrors = $variables['listItem']->hasErrors($field->handle . '.*')) {
                         break;
@@ -619,8 +623,10 @@ class ListsController extends BaseListItemsController
 
             $variables['tabs'][] = [
                 'label' => Craft::t('site', $tab->name),
-                'url' => '#' . $tab->getHtmlId(),
-                'class' => $hasErrors ? 'error' : null
+                'htmlId' => $htmlId,
+                'url' => '#' . $htmlId,
+                'class' => $hasErrors ? 'error' : null,
+                'fields' => $fields
             ];
         }
 
@@ -638,6 +644,13 @@ class ListsController extends BaseListItemsController
                 'label' => $type['label'],
                 'value' => $key
             ];
+        }
+
+        if (!isset($variables['listItemElement']) && !isset($variables['listItemChanged'])) {
+            $variables['listItemElement'] = $variables['listItem']->getElement();
+        } else {
+            $variables['listItemElement'] = null;
+            $variables['listItem']->url = '';
         }
 
         if (!isset($variables['linkType'])) {

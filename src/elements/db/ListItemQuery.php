@@ -18,6 +18,7 @@ use Craft;
 use craft\db\Query;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
+use dutchheight\navie\elements\ListItem;
 
 class ListItemQuery extends ElementQuery
 {
@@ -72,12 +73,9 @@ class ListItemQuery extends ElementQuery
      */
     public function init()
     {
-        if ($this->withStructure === null) {
-            $this->withStructure = true;
-        }
+        $this->withStructure = true;
         parent::init();
     }
-
 
     /**
      * Narrows the query results based on the lists the listitem belong to.
@@ -134,8 +132,40 @@ class ListItemQuery extends ElementQuery
      */
     public function listHandle(string $listHandle): ListItemQuery
     {
+        Craft::$app->getDeprecator()->log('craft.navie.items().listHandle()', 'The listHandle() function used to query for list items is now deprecated. Use handle() instead.');
+
         $this->listHandle = $listHandle;
         return $this;
+    }
+
+    /**
+     * Sets the list handle property
+     *
+     * @param string $listHandle
+     * @return ListItemQuery
+     */
+    public function handle(string $listHandle): ListItemQuery
+    {
+        $this->listHandle = $listHandle;
+        return $this;
+    }
+
+    public function populate($rows)
+    {
+        $rows = parent::populate($rows);
+
+        foreach ($rows as $row) {
+            // Check if row is a ListItem, because Graphql returns an array.
+            if (!$row instanceof ListItem) {
+                return $rows;
+            }
+
+            if ($row->getActive()) {
+                $this->_setActiveState($row);
+            }
+        }
+
+        return $rows;
     }
 
     // Protected Methods
@@ -155,17 +185,29 @@ class ListItemQuery extends ElementQuery
             $table . '.elementId',
             $table . '.type',
             $table . '.url',
-            $table . '.target',
+            $table . '.target'
         ]);
 
+        $this->_joinLinkedElement();
         $this->_applyListIdParam();
         $this->_applyListHandleParam();
 
         return parent::beforePrepare();
     }
 
-    // Protected Methods
+    // Private Methods
     // =========================================================================
+
+    private function _joinLinkedElement()
+    {
+        if (filter_var($this->siteId, FILTER_VALIDATE_INT) !== false) {
+            $this->query->addSelect('linked_elements.uri AS linkedElementUrl');
+            $this->query->leftJoin(
+                '{{%elements_sites}} linked_elements',
+                '[[navie_listitems.elementId]] = [[linked_elements.elementId]] AND linked_elements.siteId = ' . $this->siteId
+            );
+        }
+    }
 
     /**
      * Applies the 'listId' param to the query being prepared
@@ -185,6 +227,23 @@ class ListItemQuery extends ElementQuery
         if ($this->listHandle) {
             $this->subQuery->innerJoin('{{%navie_lists}} lists', '[[lists.id]] = [[navie_listitems.listId]]');
             $this->subQuery->andWhere(Db::parseParam('lists.handle', $this->listHandle));
+        }
+    }
+
+    /**
+     * Applies the 'active' state to the list items during populating.
+     */
+    private function _setActiveState($row)
+    {
+        $prev = $row->getPrev();
+
+        if ($prev !== null && $row->level >= $prev->level) {
+            if ($row->level > $prev->level) {
+                $prev->setActive(true);
+            }
+            $this->_setActiveState($prev);
+        } else {
+            return;
         }
     }
 }

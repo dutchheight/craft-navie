@@ -16,7 +16,7 @@
 <ul {% if ulClass|length %}class="{{ ulClass }}"{% endif %} {% for key, value in ulAttributes %}{{ key }}="{{ value }}"{% endfor %}>
     {% nav item in items %}
         <li {% if listClass|length %}class="{{ listClass }}"{% endif %} {% for key, value in listAttributes %}{{ key }}="{{ value }}"{% endfor %}>
-            <a href="{{ item.getUrl() }}" class="{{ linkClass }} {% if item.active %}{{ linkActiveClass -}}{% endif %}" target="{{ item.target }}" {% for key, value in linkAttributes %}{{ key }}="{{ value }}"{% endfor %}>
+            <a href="{{ item.getUrl() }}" class="{{ linkClass }} {% if item.getActive() %}{{ linkActiveClass -}}{% endif %}" target="{{ item.target }}" {% for key, value in linkAttributes %}{{ key }}="{{ value }}"{% endfor %}>
                 {{- item.title -}}
             </a>
 

@@ -15,11 +15,11 @@ use dutchheight\navie\Navie;
 use dutchheight\navie\elements\db\ListItemQuery;
 use dutchheight\navie\models\ListModel;
 use dutchheight\navie\records\ListItemRecord;
-use dutchheight\navie\jobs\ResaveListItems;
 
 use Craft;
 use craft\base\Element;
 use craft\controllers\ElementIndexesController;
+use craft\db\Query;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\actions\Edit;
@@ -28,8 +28,12 @@ use craft\elements\actions\Delete;
 use craft\elements\actions\NewChild;
 use craft\elements\actions\Duplicate;
 use craft\elements\actions\DeepDuplicate;
+use craft\elements\Asset;
+use craft\elements\Category;
+use craft\elements\Entry;
+use craft\helpers\ArrayHelper;
 use craft\helpers\UrlHelper;
-
+use craft\services\Elements;
 use yii\base\InvalidConfigException;
 
 class ListItem extends Element
@@ -98,28 +102,43 @@ class ListItem extends Element
      *
      * @return bool
      */
-    public function active()
+    public function getActive()
     {
+        if ($this->_active) {
+            return true;
+        }
+
         $url = str_replace(UrlHelper::siteUrl(), '', $this->getUrl());
 
         // if external url, we don't have to check if the link is active.
         if (strpos($url, '://')) {
-            return false;
+            return $this->_active = false;
         }
 
         $url = $this->removeSlashes($url);
 
         if ($url === Craft::$app->getRequest()->getPathInfo()) {
-            return true;
+            return $this->_active = true;
         }
 
-        if ($this->hasDescendants) {
-            $descendants = $this->getDescendants()->all();
+        return false;
+    }
 
-            foreach ($descendants as $descendant) {
-                if ($descendant->active()) {
-                    return true;
-                }
+    public function setActive($active)
+    {
+        $this->_active = $active;
+    }
+
+    public function isChildActive() {
+        if (!$this->hasDescendants) {
+            return false;
+        }
+
+        $descendants = $this->getDescendants()->all();
+
+        foreach ($descendants as $descendant) {
+            if ($descendant->getActive()) {
+                return true;
             }
         }
 
@@ -134,7 +153,7 @@ class ListItem extends Element
         $list = $this->getList();
 
         if ($list && !$list->propagate) {
-            return [Craft::$app->getSites()->getCurrentSite()->id];
+            return [$this->siteId];
         }
 
         return Craft::$app->getSites()->getEditableSiteIds();
@@ -145,19 +164,20 @@ class ListItem extends Element
      */
     public function getUrl() {
         if ($this->type === 'url') {
-            $this->url = Craft::parseEnv($this->url);
+            return Craft::parseEnv($this->_url);
         } else {
-            $element = $this->getElement();
+            if ($this->_linkedElementUrl !== null) {
+                return UrlHelper::siteUrl($this->_linkedElementUrl !== '__home__' ? $this->_linkedElementUrl : '');
+            } else {
+                $element = $this->getElement();
 
-            if (!$element) {
-                return null;
+                if ($element) {
+                    return $element->url;
+                }
             }
-
-            $path = ($element->uri !== '__home__' ? $element->uri : '');
-            $this->url = UrlHelper::siteUrl($path);
         }
 
-        return $this->url;
+        return null;
     }
 
     public static function gqlTypeNameByContext($context): string
@@ -229,7 +249,7 @@ class ListItem extends Element
                 // Set status
                 $actions[] = [
                     'type' => SetStatus::class,
-                    'allowDisabledForSite' => $isMultiSite
+                    'allowDisabledForSite' => ($isMultiSite && $list->propagate)
                 ];
 
                 $actions[] = $elementsService->createAction([
@@ -276,6 +296,53 @@ class ListItem extends Element
         }
 
         return $actions;
+    }
+
+    public static function eagerLoadingMap(array $sourceElements, string $handle)
+    {
+        $types = ['entry', 'category', 'asset'];
+
+        if (!in_array($handle, $types)) {
+            return parent::eagerLoadingMap($sourceElements, $handle);
+        }
+
+        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+
+        $map = (new Query())
+            ->select(['id as source', 'elementId as target'])
+            ->from(['{{%navie_listitems}}'])
+            ->where(['id' => $sourceElementIds])
+            ->andWhere(['type' => $handle])
+            ->andWhere(['not', ['elementId' => null]])
+            ->all();
+
+        switch ($handle) {
+            case 'entry':
+                $elementType = Entry::class;
+                break;
+            case 'category':
+                $elementType = Category::class;
+                break;
+            case 'asset':
+                $elementType = Asset::class;
+        }
+
+        return [
+            'elementType' => $elementType,
+            'map' => $map
+        ];
+    }
+
+    public function setEagerLoadedElements(string $handle, array $elements)
+    {
+        $types = ['entry', 'category', 'asset'];
+
+        if (!in_array($handle, $types) || !count($elements)) {
+            return parent::setEagerLoadedElements($handle, $elements);
+        }
+
+        $element = $elements[0];
+        $this->setElement($element);
     }
 
     protected function removeSlashes($str): string
@@ -336,7 +403,7 @@ class ListItem extends Element
     /**
      * @var string Url of this list item
      */
-    public $url;
+    private $_url;
 
     /**
      * @var bool|null
@@ -345,9 +412,19 @@ class ListItem extends Element
     private $_hasNewParent;
 
     /**
-     * @var
+     * @var Element
      */
     private $_element;
+
+    /**
+     * @var string
+     */
+    private $_linkedElementUrl;
+
+    /**
+     * @var bool
+     */
+    private $_active;
 
     // Public Methods
     // =========================================================================
@@ -372,9 +449,19 @@ class ListItem extends Element
         return null;
     }
 
+    public function setUrl($url)
+    {
+        $this->_url = $url;
+    }
+
     public function setElement($element)
     {
         $this->_element = $element;
+    }
+
+    public function setLinkedElementUrl($linkedElementUrl)
+    {
+        $this->_linkedElementUrl = $linkedElementUrl;
     }
 
     public function getIsEditable(): bool
@@ -523,18 +610,6 @@ class ListItem extends Element
             }
         }
 
-        // Update the list item's descendants, who may be using this list item's URI in their own URIs
-        Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
-
-        Craft::$app->getQueue()->push(new ResaveListItems([
-            'description' => Craft::t('navie', 'Updating cache for {list}', ['list' => $list->handle]),
-            'criteria' => [
-                'siteId' => $this->siteId,
-                'listHandle' => $list->handle,
-                'enabledForSite' => true
-            ]
-        ]));
-
         parent::afterSave($isNew);
     }
 
@@ -543,30 +618,15 @@ class ListItem extends Element
      */
     public function afterDelete()
     {
-        $list = $this->getList();
-
         try {
             $conditions = [];
             $conditions['id'] = $this->id;
-
-            if (!$list->propagate) {
-                $conditions['siteId'] = $this->siteId;
-            }
+            $conditions['listId'] = $this->listId;
 
             ListItemRecord::deleteAll($conditions);
-
         } catch (\Exception $e) {
             throw $e;
         }
-
-        Craft::$app->getQueue()->push(new ResaveListItems([
-            'description' => Craft::t('navie', 'Updating cache for {list}', ['list' => $list->handle]),
-            'criteria' => [
-                'siteId' => $this->siteId,
-                'listHandle' => $list->handle,
-                'enabledForSite' => true
-            ]
-        ]));
 
         parent::afterDelete();
     }
@@ -595,30 +655,6 @@ class ListItem extends Element
             // Normalize it now in case the system language changes later
             $this->normalizeFieldValue($field->handle);
         }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterMoveInStructure(int $structureId)
-    {
-        // Was the entry moved within its list's structure?
-        $list = $this->getList();
-
-        if ($list->structureId == $structureId) {
-            Craft::$app->getElements()->updateElementSlugAndUri($this, true, true, true);
-        }
-
-        Craft::$app->getQueue()->push(new ResaveListItems([
-            'description' => Craft::t('navie', 'Updating cache for {list}', ['list' => $list->handle]),
-            'criteria' => [
-                'siteId' => $this->siteId,
-                'listHandle' => $list->handle,
-                'enabledForSite' => true
-            ]
-        ]));
-
-        parent::afterMoveInStructure($structureId);
     }
 
     // Private Methods

@@ -93,6 +93,11 @@ class ListItem extends Structure
                 'type' => Type::string(),
                 'description' => 'The url of the list item.'
             ],
+            'target' => [
+                'name' => 'target',
+                'type' => Type::string(),
+                'description' => 'The target of the list item.'
+            ],
             'parent' => [
                 'name' => 'parent',
                 'type' => ListItemInterface::getType(),

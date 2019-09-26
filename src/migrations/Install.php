@@ -61,7 +61,6 @@ class Install extends Migration
     {
         $this->driver = Craft::$app->getConfig()->getDb()->driver;
         $this->removeTables();
-        $this->removeDefaultData();
 
         return true;
     }

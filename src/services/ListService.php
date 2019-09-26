@@ -14,6 +14,7 @@ use dutchheight\navie\Navie;
 use dutchheight\navie\records\ListRecord;
 use dutchheight\navie\models\ListModel;
 use dutchheight\navie\events\ListEvent;
+use dutchheight\navie\events\RegisterLinkTypesEvent;
 use dutchheight\navie\elements\ListItem;
 
 use Craft;
@@ -26,9 +27,10 @@ use craft\elements\Entry;
 use craft\elements\Category;
 use craft\elements\Asset;
 use craft\commerce\elements\Product;
+use craft\events\SiteEvent;
 use craft\helpers\ArrayHelper;
+use craft\queue\jobs\ResaveElements;
 
-use yii\caching\TagDependency;
 
 
 /**
@@ -60,6 +62,29 @@ class ListService extends Component
      * @event ListEvent the event that is triggered after a navigation is deleted.
      */
     const EVENT_AFTER_DELETE_LIST = 'afterDeleteList';
+
+    /**
+     * @event RegisterGqlTypesEvent The event that is triggered when registering GraphQL types.
+     *
+     * ```php
+     * use dutchheight\navie\events\RegisterLinkTypesEvent;
+     * use dutchheight\navie\services\ListService;
+     * use yii\base\Event;
+     *
+     * Event::on(ListService::class, ListService::EVENT_REGISTER_LINK_TYPES, function(RegisterLinkTypesEvent $event) {
+     *     // Add my custom Link Type
+     *     $event->types[] = [
+     *          'custom' => [
+     *              'label' => Craft::t('app', 'Custom'),
+     *              'button' => Craft::t('app', 'Add a custom'),
+     *              'instructions' => Craft::t('navie', 'Please choose a single custom to link to from this link item.'),
+     *              'type' => Custom::class,
+     *          ]
+     *      ];
+     * });
+     * ```
+     */
+    const EVENT_REGISTER_LINK_TYPES = 'registerLinkTypes';
 
     // Properties
     // =========================================================================
@@ -387,77 +412,15 @@ class ListService extends Component
 
     public function getListItemsByListHandle(string $listHandle, int $siteId = null)
     {
-        if (!$siteId) {
-            $siteId = Craft::$app->getSites()->getCurrentSite()->id;
-        }
-
-        if (isset($this->_listItems[$siteId][$listHandle])) {
-            return $this->_listItems[$siteId][$listHandle];
-        }
-
-        return $this->getListItemsCache($listHandle, $siteId);
-    }
-
-    public function getListItemsForRender(string $listHandle, int $siteId = null)
-    {
-        $listItems = [];
-
-        if (!$siteId) {
-            $siteId = Craft::$app->getSites()->getCurrentSite()->id;
-        }
-
-        if (isset($this->_listItems[$siteId][$listHandle])) {
-            $listItems = $this->_listItems[$siteId][$listHandle];
-        } else {
-            $list = $this->getListByHandle($listHandle);
-
-            if ($list) {
-                $listItems = $this->getListItemsCache($listHandle, $siteId);
-            }
-        }
-
-        return $listItems;
-    }
-
-    /**
-     * Gets or sets the cache for a specific list
-     *
-     * @param string $listHandle
-     * @param integer $siteId
-     * @return ListItem[] $listItems
-     */
-    public function getListItemsCache(string $listHandle, int $siteId)
-    {
-        $cacheKey = Navie::LIST_CACHE_KEY . ':' . $siteId . ':' . $listHandle;
-        $dependency = new TagDependency([
-            'tags' => [
-                Navie::LIST_CACHE_KEY,
-                Navie::LIST_CACHE_KEY . ':' . $siteId . ':' . $listHandle
-            ]
-        ]);
-        $duration = null;
-
-        $listItems = Craft::$app->getCache()->getOrSet($cacheKey, function () use ($listHandle, $siteId) {
-            $items = ListItem::find()
-                ->siteId($siteId)
-                ->listHandle($listHandle)
-                ->enabledForSite(true)
-                ->all();
-
-            $this->_listItems[$siteId][$listHandle] = $this->_createListItemModels($items);
-
-            return $this->_listItems[$siteId][$listHandle];
-        }, $duration, $dependency);
-
-        $this->_listItems[$siteId][$listHandle] = $listItems;
-        return $listItems;
+        return ListItem::find()
+            ->handle($listHandle)
+            ->enabledForSite(true)
+            ->all();
     }
 
     // List Item Types
     // =========================================================================
     public function getListItemTypes() {
-        $elements = [];
-
         $elements = [
             'entry' => [
                 'label' => Craft::t('app', 'Entries'),
@@ -493,7 +456,13 @@ class ListService extends Component
             ];
         }
 
-        return $elements;
+        $event = new RegisterLinkTypesEvent([
+            'types' => $elements,
+        ]);
+
+        $this->trigger(self::EVENT_REGISTER_LINK_TYPES, $event);
+
+        return $event->types;
     }
 
     // Private Methods
@@ -518,37 +487,5 @@ class ListService extends Component
         }
 
         return $list;
-    }
-
-    /**
-     * Create ListItem models for a given list
-     *
-     * @param array $items
-     * @param ListModel $list
-     * @return array
-     */
-    private function _createListItemModels(array $items): array
-    {
-        $listItemModels = [];
-
-        foreach ($items as $item) {
-            $listItem = $this->_createListItemModel($item);
-            if ($listItem) {
-                $listItemModels[] = $listItem;
-            }
-        }
-
-        return $listItemModels;
-    }
-
-    private function _createListItemModel(ListItem $listItem)
-    {
-        $url = $listItem->getUrl();
-
-        if (!$url) {
-            return false;
-        }
-
-        return $listItem;
     }
 }

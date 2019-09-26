@@ -69,7 +69,7 @@ trait PluginTrait
     // Protected Methods
     // =========================================================================
 
-    protected function registerComponents()
+    private function _registerComponents()
     {
         $this->setComponents([
             'lists' => ListService::class

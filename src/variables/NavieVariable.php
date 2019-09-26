@@ -50,7 +50,7 @@ class NavieVariable
         $view->setTemplateMode(View::TEMPLATE_MODE_CP);
 
         echo $view->renderTemplate('navie/render/_index', [
-            'items' => Navie::$plugin->getLists()->getListItemsForRender($handle),
+            'items' => Navie::$plugin->getLists()->getListItemsByListHandle($handle),
             'options' => $options
         ]);
 
@@ -64,7 +64,8 @@ class NavieVariable
      */
     public function raw(string $handle, $siteId = null)
     {
-        return Navie::$plugin->getLists()->getListItemsForRender($handle, $siteId);
+        Craft::$app->getDeprecator()->log('craft.navie.raw()', 'The raw() function used to query for list items is now deprecated. Use items() instead.');
+        return Navie::$plugin->getLists()->getListItemsByListHandle($handle);
     }
 
     /**

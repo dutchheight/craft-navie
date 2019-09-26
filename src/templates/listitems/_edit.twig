@@ -94,14 +94,15 @@
         }) }}
 
         <div id="fields-custom">
-            <div id="tab-common">
+            <div id="{{ tabs[0].htmlId }}">
                 {% include 'navie/listitems/_fields' %}
             </div>
 
-            {% for tab in listItem.getFieldLayout().getTabs() %}
-                <div id="{{ tab.getHtmlId() }}" class="hidden">
+            {% set tabs = tabs|slice(1) %}
+            {% for tab in tabs %}
+                <div id="{{ tab.htmlId }}" class="hidden">
                     {% include "_includes/fields" with {
-                        fields:  tab.getFields(),
+                        fields: tab.fields,
                         element: listItem,
                     } only %}
                 </div>

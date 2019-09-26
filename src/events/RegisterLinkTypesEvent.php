@@ -10,21 +10,15 @@
 
 namespace dutchheight\navie\events;
 
-use dutchheight\navie\models\ListModel;
 use yii\base\Event;
 
-class ListEvent extends Event
+class RegisterLinkTypesEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var ListModel|null The list model associated with the event.
+     * @var array List of Link Types
      */
-    public $list;
-
-    /**
-     * @var bool Whether the list is brand new
-     */
-    public $isNew = false;
+    public $types = [];
 }
