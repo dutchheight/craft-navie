@@ -7,3 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ## 1.1.1 - 2019-09-26
 ### Added
 - Initial release
+
+## 1.1.2 - 2019-10-09
+### Changed
+- Changed List item titles to optional when using linked elements.
