@@ -95,4 +95,5 @@ return [
     'Manage items' => 'Lijstitems beheren',
     'Load in the same frame as it was clicked' => 'Laad in hetzelfde frame als waarop werd geklikt',
     'Load in a new window' => 'Laad in een nieuw venster',
+    'This can be left blank if you just want to use the linked element\'s title.' => 'Dit kan blanco worden gelaten indien u de titel van het gelinkte element wilt gebruiken.',
 ];

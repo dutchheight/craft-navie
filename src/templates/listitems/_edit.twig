@@ -83,13 +83,13 @@
         {{ forms.textField({
             label: "Title"|t('app'),
             siteId: listItem.siteId,
+            instructions: "This can be left blank if you just want to use the linked element\'s title."|t('navie'),
             id: 'title',
             name: 'title',
             value: listItem.title,
             errors: listItem.getErrors('title'),
             first: true,
             autofocus: true,
-            required: true,
             maxlength: 255
         }) }}
 

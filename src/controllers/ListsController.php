@@ -11,19 +11,19 @@
 
 namespace dutchheight\navie\controllers;
 
-use dutchheight\navie\Navie;
-use dutchheight\navie\models\ListModel;
-use dutchheight\navie\elements\ListItem;
-use dutchheight\navie\assets\cp\Bundle as NavieBundle;
-
 use Craft;
 use craft\base\Element;
 use craft\base\Field;
 use craft\helpers\UrlHelper;
 
-use yii\web\Response;
-use yii\web\NotFoundHttpException;
+use dutchheight\navie\assets\cp\Bundle as NavieBundle;
+use dutchheight\navie\elements\ListItem;
+use dutchheight\navie\models\ListModel;
+use dutchheight\navie\Navie;
+
 use yii\web\ForbiddenHttpException;
+use yii\web\NotFoundHttpException;
+use yii\web\Response;
 
 /**
  * @author    Dutch Height
@@ -527,6 +527,12 @@ class ListsController extends BaseListItemsController
         $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
         $listItem->setFieldValuesFromRequest($fieldsLocation);
 
+        if (empty($listItem->title) && $listItem->elementId !== null) {
+            if ($element = Craft::$app->getElements()->getElementById($listItem->elementId)) {
+                $listItem->title = $element->title;
+            }
+        }
+
         // Parent
         $parentId = $request->getBodyParam('parentId');
         if ($parentId !== null) {
@@ -651,6 +657,7 @@ class ListsController extends BaseListItemsController
         } else {
             $variables['listItemElement'] = null;
             $variables['listItem']->url = '';
+            $variables['listItem']->elementId = null;
         }
 
         if (!isset($variables['linkType'])) {
