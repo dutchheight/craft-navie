@@ -10,15 +10,15 @@
 
 namespace dutchheight\navie\elements\db;
 
-use dutchheight\navie\records\ListRecord;
-use dutchheight\navie\records\ListItemRecord;
-use dutchheight\navie\models\ListModel;
-
 use Craft;
 use craft\db\Query;
 use craft\elements\db\ElementQuery;
+
 use craft\helpers\Db;
 use dutchheight\navie\elements\ListItem;
+use dutchheight\navie\models\ListModel;
+use dutchheight\navie\records\ListItemRecord;
+use dutchheight\navie\records\ListRecord;
 
 class ListItemQuery extends ElementQuery
 {
@@ -176,16 +176,15 @@ class ListItemQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
-        $table = ListItemRecord::tableName();
         $this->joinElementTable('navie_listitems');
 
         $this->query->select([
-            $table . '.id',
-            $table . '.listId',
-            $table . '.elementId',
-            $table . '.type',
-            $table . '.url',
-            $table . '.target'
+            'navie_listitems.id',
+            'navie_listitems.listId',
+            'navie_listitems.elementId',
+            'navie_listitems.type',
+            'navie_listitems.url',
+            'navie_listitems.target'
         ]);
 
         $this->_joinLinkedElement();
