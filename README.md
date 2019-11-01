@@ -63,38 +63,40 @@ To install the plugin, follow these instructions.
 |options|object|false|For more info see [Available Options](#available-options)|
 
 #### Available Options
-```
+```twig
 {
-	ulClass: 'class',
-	ulAttributes: {
-		'style': 'margin-top: 10;'
-	},
-	ulChildClass: 'class',
-	ulChildAttributes: {
-		'style': 'margin-top: 10;'
-	},
-	listClass: 'class',
-	listAttributes: {
-		'style': 'margin-top: 10;'
-	},
-	linkClass: 'class',
-	linkAttributes: {
-		'style': 'margin-top: 10;'
-	},
-	linkActiveClass: 'active'
+    ulClass: 'class',
+    ulAttributes: {
+        'style': 'margin-top: 10;'
+    },
+    ulChildClass: 'class',
+    ulChildAttributes: {
+        'style': 'margin-top: 10;'
+    },
+    listClass: 'class',
+    listAttributes: {
+        'style': 'margin-top: 10;'
+    },
+    linkClass: 'class',
+    linkAttributes: {
+        'style': 'margin-top: 10;'
+    },
+    linkActiveClass: 'active'
 }
 
 ```
 
 #### Examples
 Render a navie list:
-```
-{{ craft.navie.render('main', {
-	ulChildAttributes: {
-		'style': 'margin-top: 0.25rem;',
-		'data-option': 'test',
-	}
-}) }}
+```twig
+{{ 
+    craft.navie.render('main', {
+        ulChildAttributes: {
+            'style': 'margin-top: 0.25rem;',
+            'data-option': 'custom data option',
+        }
+    }) 
+}}
 ```
 ---
 
@@ -109,23 +111,30 @@ Render a navie list:
 #### Examples
 Get all items
 ```
-{% set items = craft.navie.items().list('main').all() %}
+{% 
+    set items = craft.navie.items()
+        .list('main')
+        .all()
+%}
 ```
 
 Get items limited by level
-``` 
-{% set items = craft.navie.items()
-.list('main')
-.level(1) %}
-
+```twig 
+{% 
+    set items = craft.navie.items()
+        .list('main')
+        .level(1)
+%}
 ```
 
 Get all items Eager loaded
-``` 
-{% set items = craft.navie.items()
-.list('main')
-.with(['entry', 'category', 'asset'])
-.all() %}
+```twig
+{%
+    set items = craft.navie.items()
+        .list('main')
+        .with(['entry', 'category', 'asset'])
+        .all() 
+%}
 ```
 
 Now you are able to use `items.getElement().title` without extra queries. This is also posible without eager loading but at a peformance cost.
@@ -133,9 +142,8 @@ Now you are able to use `items.getElement().title` without extra queries. This i
 ---
 
 ## Using Navie with GraphQL
-
-#### Examples
-```
+Navie has built-in support for accessing lists and items via GraphQL use native [Craft CMS 3.3 GraphQL](https://docs.craftcms.com/v3/graphql.html).
+```graphql
 {
   listItems(list: "main", level: 1) {
     id,
@@ -147,7 +155,51 @@ Now you are able to use `items.getElement().title` without extra queries. This i
       url,
       title,
       target,
-      ... on main { // Main is listhandle/ Get custom fields
+      ... on main { # Main is list handle
+        classes
+      }
+    }
+  }
+}
+```
+## Using Navie with CraftQL Plugin
+Navie has built-in support for accessing lists and items via GraphQL use the [CraftQL plugin](https://github.com/markhuot/craftql).
+
+You can retrieve all the lists with their fields:
+
+```graphql
+{
+  navie {
+    lists {
+      id,
+      structureId,
+      fieldLayoutId,
+      maxLevels,
+      name,
+      handle,
+      uid,
+      propagate
+    }
+  }
+}
+```
+You can also retrieve all list items with their fields and even the custom fields on the list
+```graphql
+{
+  navie {
+    items(list: main) {
+      title,
+      url,
+      target,
+      children {
+        title,
+        url,
+        target
+        ... on MainList {
+          classes
+        }
+      },
+      ... on MainList {
         classes
       }
     }
