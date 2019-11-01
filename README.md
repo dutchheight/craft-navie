@@ -155,7 +155,7 @@ Navie has built-in support for accessing lists and items via GraphQL use native 
       url,
       title,
       target,
-      ... on main { # Main is list handle
+      ... on main_List { # Main is list handle
         classes
       }
     }
