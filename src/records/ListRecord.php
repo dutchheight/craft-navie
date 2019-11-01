@@ -10,12 +10,9 @@
 
 namespace dutchheight\navie\records;
 
-use dutchheight\navie\Navie;
-
-use Craft;
 use craft\db\ActiveRecord;
-use craft\records\Structure;
 use craft\records\FieldLayout;
+use craft\records\Structure;
 
 use yii\db\ActiveQueryInterface;
 
@@ -38,7 +35,6 @@ class ListRecord extends ActiveRecord
 
     /**
      * @inheritdoc
-     * @return string
      */
     public static function tableName(): string
     {
