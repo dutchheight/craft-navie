@@ -110,7 +110,7 @@ Render a navie list:
 
 #### Examples
 Get all items
-```
+```twig
 {% 
     set items = craft.navie.items()
         .list('main')
@@ -119,7 +119,7 @@ Get all items
 ```
 
 Get items limited by level
-```twig 
+```twig
 {% 
     set items = craft.navie.items()
         .list('main')
