@@ -212,7 +212,6 @@ You can also retrieve all list items with their fields and even the custom field
 
 Some things to do, and ideas for potential features:
 
-* Release it
 * Settings for available link types
 * Support Project.yaml
 * Custom link type registration
