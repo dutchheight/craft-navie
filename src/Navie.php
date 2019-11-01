@@ -10,27 +10,33 @@
 
 namespace dutchheight\navie;
 
-use dutchheight\navie\base\PluginTrait;
-use dutchheight\navie\variables\NavieVariable;
-use dutchheight\navie\models\Settings;
-use dutchheight\navie\elements\ListItem as ListItemElement;
-use dutchheight\navie\graphql\queries\ListItem as ListItemQuery;
-use dutchheight\navie\graphql\interfaces\ListItem as ListItemInterface;
-
 use Craft;
 use craft\base\Plugin;
-use craft\helpers\UrlHelper;
-use craft\services\UserPermissions;
-use craft\services\Gql;
-use craft\web\UrlManager;
-use craft\web\twig\variables\CraftVariable;
-use craft\events\RegisterUrlRulesEvent;
-use craft\events\RegisterUserPermissionsEvent;
 use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlTypesEvent;
+use craft\events\RegisterUrlRulesEvent;
+use craft\events\RegisterUserPermissionsEvent;
 use craft\events\SiteEvent;
+use craft\helpers\UrlHelper;
 use craft\queue\jobs\ResaveElements;
+use craft\services\Gql;
 use craft\services\Sites;
+use craft\services\UserPermissions;
+use craft\web\twig\variables\CraftVariable;
+use craft\web\UrlManager;
+
+use dutchheight\navie\base\PluginTrait;
+use dutchheight\navie\elements\ListItem as ListItemElement;
+use dutchheight\navie\graphql\interfaces\ListItem as ListItemInterface;
+use dutchheight\navie\graphql\queries\ListItem as ListItemQuery;
+use dutchheight\navie\listeners\GetNavieFieldSchema;
+use dutchheight\navie\models\Settings;
+use dutchheight\navie\variables\NavieVariable;
+
+use markhuot\CraftQL\Builders\Schema;
+use markhuot\CraftQL\CraftQL;
+use markhuot\CraftQL\Events\AlterQuerySchema;
+
 use yii\base\Event;
 
 /**
@@ -140,6 +146,10 @@ class Navie extends Plugin
 
         if (version_compare(Craft::$app->getVersion(), '3.3', '>=')) {
             $this->_registerGraphql();
+        }
+
+        if (class_exists(CraftQL::class)) {
+            Event::on(Schema::class, AlterQuerySchema::EVENT, [GetNavieFieldSchema::class, 'handle']);
         }
 
         // Install only for non-console Control Panel requests
