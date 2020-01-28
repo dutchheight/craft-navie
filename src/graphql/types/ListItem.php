@@ -2,11 +2,11 @@
 
 namespace dutchheight\navie\graphql\types;
 
-use dutchheight\navie\graphql\interfaces\ListItem as ListItemInterface;
-use dutchheight\navie\elements\ListItem as ListItemElement;
-
-use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\base\ObjectType;
+use craft\gql\interfaces\Element as ElementInterface;
+
+use dutchheight\navie\elements\ListItem as ListItemElement;
+use dutchheight\navie\graphql\interfaces\ListItem as ListItemInterface;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
@@ -39,6 +39,7 @@ class ListItem extends ObjectType
         $fieldName = $resolveInfo->fieldName;
 
         $list = $source->getList();
+        $element = $source->getElement();
 
         switch ($fieldName) {
             case 'listId':
@@ -53,9 +54,12 @@ class ListItem extends ObjectType
                 return $list->propagate;
             case 'url':
                 return $source->getUrl();
+            case 'slug':
+                return $element->slug ?? null;
+            case 'uri':
+                return $element->uri ?? null;
         }
 
         return $source->$fieldName;
     }
-
 }

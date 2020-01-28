@@ -2,14 +2,14 @@
 
 namespace dutchheight\navie\graphql\interfaces;
 
-use dutchheight\navie\graphql\arguments\ListItem as ListItemArguments;
-use dutchheight\navie\graphql\interfaces\ListItem as ListItemInterface;
-use dutchheight\navie\elements\ListItem as ListItemElement;
-use dutchheight\navie\graphql\types\generators\ListItemType;
-
+use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Structure;
 use craft\gql\TypeLoader;
-use craft\gql\GqlEntityRegistry;
+use dutchheight\navie\elements\ListItem as ListItemElement;
+
+use dutchheight\navie\graphql\arguments\ListItem as ListItemArguments;
+use dutchheight\navie\graphql\interfaces\ListItem as ListItemInterface;
+use dutchheight\navie\graphql\types\generators\ListItemType;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
 

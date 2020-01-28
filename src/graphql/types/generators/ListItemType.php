@@ -2,15 +2,15 @@
 
 namespace dutchheight\navie\graphql\types\generators;
 
-use dutchheight\navie\Navie;
-use dutchheight\navie\graphql\interfaces\ListItem as ListItemInterface;
-use dutchheight\navie\elements\ListItem as ListItemElement;
-use dutchheight\navie\models\ListModel;
-use dutchheight\navie\graphql\types\ListItem;
-
 use craft\base\Field;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\GqlEntityRegistry;
+use dutchheight\navie\elements\ListItem as ListItemElement;
+use dutchheight\navie\graphql\interfaces\ListItem as ListItemInterface;
+
+use dutchheight\navie\graphql\types\ListItem;
+use dutchheight\navie\models\ListModel;
+use dutchheight\navie\Navie;
 
 class ListItemType implements GeneratorInterface
 {
