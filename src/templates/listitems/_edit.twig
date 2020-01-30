@@ -94,7 +94,7 @@
         }) }}
 
         <div id="fields-custom">
-            <div id="{{ tabs[0].htmlId }}">
+            <div {% if tabs is not null %}id="{{ tabs[0].htmlId }}"{% endif %}>
                 {% include 'navie/listitems/_fields' %}
             </div>
 

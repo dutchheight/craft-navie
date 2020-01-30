@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.2.2 - 2020-01-29
+### Fixed
+- Fixed a bug when editing a list item when there are zero field layout tabs
+
 ## 1.2.1 - 2020-01-28
 ### Added
 - Added slug and uri response for linked entries and categories
