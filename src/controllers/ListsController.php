@@ -528,7 +528,7 @@ class ListsController extends BaseListItemsController
         $listItem->setFieldValuesFromRequest($fieldsLocation);
 
         if (empty($listItem->title) && $listItem->elementId !== null) {
-            if ($element = Craft::$app->getElements()->getElementById($listItem->elementId)) {
+            if ($element = Craft::$app->getElements()->getElementById($listItem->elementId, null, $listItem->siteId)) {
                 $listItem->title = $element->title;
             }
         }
