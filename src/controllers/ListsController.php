@@ -217,6 +217,8 @@ class ListsController extends BaseListItemsController
             'listItem' => $listItem
         ];
 
+        $siteHandle = $siteHandle ?? Craft::$app->getRequest()->getQueryParam('site', null);
+
         if ($siteHandle !== null) {
             $variables['site'] = Craft::$app->getSites()->getSiteByHandle($siteHandle);
 

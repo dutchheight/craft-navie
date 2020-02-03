@@ -11,29 +11,29 @@
 
 namespace dutchheight\navie\elements;
 
-use dutchheight\navie\Navie;
-use dutchheight\navie\elements\db\ListItemQuery;
-use dutchheight\navie\models\ListModel;
-use dutchheight\navie\records\ListItemRecord;
-
 use Craft;
 use craft\base\Element;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
-use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\actions\Edit;
-use craft\elements\actions\SetStatus;
-use craft\elements\actions\Delete;
-use craft\elements\actions\NewChild;
-use craft\elements\actions\Duplicate;
+
 use craft\elements\actions\DeepDuplicate;
+use craft\elements\actions\Delete;
+use craft\elements\actions\Duplicate;
+use craft\elements\actions\Edit;
+use craft\elements\actions\NewChild;
+use craft\elements\actions\SetStatus;
 use craft\elements\Asset;
 use craft\elements\Category;
+use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
 use craft\helpers\ArrayHelper;
 use craft\helpers\UrlHelper;
 use craft\services\Elements;
+use dutchheight\navie\elements\db\ListItemQuery;
+use dutchheight\navie\models\ListModel;
+use dutchheight\navie\Navie;
+use dutchheight\navie\records\ListItemRecord;
 use yii\base\InvalidConfigException;
 
 class ListItem extends Element
@@ -443,7 +443,7 @@ class ListItem extends Element
         }
 
         if ($this->elementId !== null) {
-            return $this->_element = Craft::$app->elements->getElementById($this->elementId);
+            return $this->_element = Craft::$app->elements->getElementById($this->elementId, null, $this->siteId);
         }
 
         return null;
