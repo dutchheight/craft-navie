@@ -340,7 +340,7 @@ class ListService extends Component
             // Delete all list items
             $listItems = ListItem::find()
                 ->status(null)
-                ->enabledForSite(false)
+                ->status(ListItem::STATUS_DISABLED)
                 ->listId($listId)
                 ->all();
 
@@ -406,7 +406,6 @@ class ListService extends Component
             ->structureId($structureId)
             ->siteId($siteId)
             ->status(null)
-            ->enabledForSite(false)
             ->one();
     }
 
@@ -414,7 +413,7 @@ class ListService extends Component
     {
         return ListItem::find()
             ->handle($listHandle)
-            ->enabledForSite(true)
+            ->status(null)
             ->all();
     }
 

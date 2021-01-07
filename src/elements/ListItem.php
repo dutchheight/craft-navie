@@ -708,7 +708,6 @@ class ListItem extends Element
         $oldParentQuery->ancestorDist(1);
         $oldParentQuery->status(null);
         $oldParentQuery->siteId($this->siteId);
-        $oldParentQuery->enabledForSite(false);
         $oldParentQuery->select('elements.id');
         $oldParentId = $oldParentQuery->scalar();
 

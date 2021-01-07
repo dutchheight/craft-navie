@@ -246,7 +246,6 @@ class ListsController extends BaseListItemsController
                 'siteId' => $site->id,
                 'listId' => $variables['list']->id,
                 'status' => null,
-                'enabledForSite' => false
             ];
 
             if ($variables['list']->maxLevels) {
@@ -258,7 +257,6 @@ class ListsController extends BaseListItemsController
                 $excludeIds = ListItem::find()
                     ->descendantOf($listItem)
                     ->status(null)
-                    ->enabledForSite(false)
                     ->ids();
 
                 $excludeIds[] = $listItem->id;
@@ -275,7 +273,6 @@ class ListsController extends BaseListItemsController
                 $parentId = $listItem
                     ->getAncestors(1)
                     ->status(null)
-                    ->enabledForSite(false)
                     ->ids();
             }
 
